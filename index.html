@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이주연 영어 수행평가 대비 퀴즈</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #ffeef6 0%, #f0e6ff 50%, #e6f3ff 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #2d2d2d;
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  header {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+    text-align: center;
+  }
+  header h1 {
+    color: #6c4ab6;
+    font-size: 26px;
+    margin-bottom: 10px;
+  }
+  header p {
+    color: #888;
+    font-size: 14px;
+    margin: 4px 0;
+  }
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    margin: 5px;
+  }
+  .controls {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mode-btn {
+    padding: 12px 20px;
+    border: 2px solid #6c4ab6;
+    background: white;
+    color: #6c4ab6;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s;
+  }
+  .mode-btn:hover { background: #f5f0ff; }
+  .mode-btn.active {
+    background: linear-gradient(135deg, #6c4ab6, #8e6cd8);
+    color: white;
+    border-color: transparent;
+  }
+  .question-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+  }
+  .question-card:hover { transform: translateY(-2px); }
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px dashed #f0e6ff;
+  }
+  .q-number {
+    background: linear-gradient(135deg, #ff9a9e, #fecfef);
+    color: white;
+    min-width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .q-text {
+    color: #2d2d2d;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 1.4;
+  }
+  .sentence-list { list-style: none; }
+  .sentence-item {
+    padding: 14px 16px;
+    margin: 8px 0;
+    background: #faf8ff;
+    border-left: 4px solid #b8a4e3;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sentence-item:hover {
+    background: #f0e6ff;
+    transform: translateX(3px);
+  }
+  .eng {
+    color: #2d2d2d;
+    font-size: 15px;
+    margin-bottom: 5px;
+    line-height: 1.5;
+  }
+  .kor {
+    color: #6c4ab6;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  /* 모드별 표시 제어 */
+  body.mode-both .eng,
+  body.mode-both .kor { display: block; }
+
+  body.mode-eng-only .eng { display: block; }
+  body.mode-eng-only .kor { display: none; }
+  body.mode-eng-only .sentence-item.revealed .kor { display: block; }
+
+  body.mode-kor-only .eng { display: none; }
+  body.mode-kor-only .kor { display: block; }
+  body.mode-kor-only .sentence-item.revealed .eng { display: block; }
+
+  .hint {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: center;
+    display: none;
+  }
+  body.mode-eng-only .hint,
+  body.mode-kor-only .hint { display: block; }
+  .progress-bar {
+    height: 8px;
+    background: #f0e6ff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 15px 0 5px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff9a9e, #6c4ab6);
+    width: 0%;
+    transition: width 0.3s;
+  }
+  .progress-text {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+  }
+  footer {
+    text-align: center;
+    padding: 25px;
+    color: #888;
+    font-size: 13px;
+  }
+  @media (max-width: 600px) {
+    header h1 { font-size: 22px; }
+    .q-text { font-size: 15px; }
+    .eng, .kor { font-size: 14px; }
+    .mode-btn { padding: 10px 14px; font-size: 13px; }
+  }
+</style>
+</head>
+<body class="mode-both">
+<div class="container">
+  <header>
+    <h1>이주연 영어 수행평가 대비 퀴즈</h1>
+    <p>중학교 영어 말하기 수행평가 학습 자료</p>
+    <div class="badge">총 10문항 · 80문장</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">학습 진행: 0 / 80 문장</div>
+  </header>
+
+  <div class="controls">
+    <button class="mode-btn active" onclick="setMode('both', this)">📖 둘 다 보기</button>
+    <button class="mode-btn" onclick="setMode('kor-only', this)">✍️ 한→영 (영작 연습)</button>
+    <button class="mode-btn" onclick="setMode('eng-only', this)">🔍 영→한 (해석 연습)</button>
+    <button class="mode-btn" onclick="resetProgress()">🔄 진행 초기화</button>
+  </div>
+
+  <div id="quizContent"></div>
+
+  <footer>
+    <p>💜 클릭하면 가려진 답이 나타납니다. 한 번에 한 문장씩 도전!</p>
+    <p style="margin-top:8px">For 이주연 · Made with care</p>
+  </footer>
+</div>
+
+<script>
+const data = [
+  {
+    q: "1. Briefly introduce yourself. (자기소개)",
+    sentences: [
+      ["Hello, my name is Lee Jooyeon.", "안녕하세요, 제 이름은 이주연입니다."],
+      ["I am a middle school student.", "저는 중학생입니다."],
+      ["I am fourteen years old.", "저는 열네 살입니다."],
+      ["I live in Korea with my family.", "저는 가족과 함께 한국에 삽니다."],
+      ["My hobby is listening to music.", "제 취미는 음악 듣기입니다."],
+      ["My favorite subject is English.", "제가 가장 좋아하는 과목은 영어입니다."],
+      ["I want to be a teacher in the future.", "저는 미래에 선생님이 되고 싶습니다."],
+      ["Nice to meet you.", "만나서 반갑습니다."]
+    ]
+  },
+  {
+    q: "2. Why is cleaning up beaches important? (해변 청소가 중요한 이유)",
+    sentences: [
+      ["Cleaning up beaches is very important.", "해변을 청소하는 것은 매우 중요합니다."],
+      ["Beaches have a lot of plastic trash.", "해변에는 플라스틱 쓰레기가 많습니다."],
+      ["Plastic is bad for sea animals.", "플라스틱은 바다 동물들에게 해롭습니다."],
+      ["Many fish eat plastic and die.", "많은 물고기들이 플라스틱을 먹고 죽습니다."],
+      ["Clean beaches make people happy.", "깨끗한 해변은 사람들을 행복하게 만듭니다."],
+      ["We can swim safely in clean water.", "우리는 깨끗한 물에서 안전하게 수영할 수 있습니다."],
+      ["We must protect our environment.", "우리는 환경을 보호해야 합니다."],
+      ["Everyone should help clean the beaches.", "모두가 해변 청소를 도와야 합니다."]
+    ]
+  },
+  {
+    q: "3. What kinds of problems do you have? (나의 고민)",
+    sentences: [
+      ["I have many problems these days.", "저는 요즘 많은 고민이 있습니다."],
+      ["I have a lot of homework every day.", "저는 매일 숙제가 많습니다."],
+      ["I don't have enough time to sleep.", "저는 잘 시간이 충분하지 않습니다."],
+      ["Sometimes I fight with my brother.", "가끔 저는 동생과 다툽니다."],
+      ["I am worried about my grades.", "저는 성적이 걱정됩니다."],
+      ["English is difficult for me.", "영어는 저에게 어렵습니다."],
+      ["I feel tired most of the time.", "저는 대부분 피곤함을 느낍니다."],
+      ["I want to solve these problems.", "저는 이런 문제들을 해결하고 싶습니다."]
+    ]
+  },
+  {
+    q: "4. What kinds of problems do your friends have? What can you say to them? (친구의 고민과 위로)",
+    sentences: [
+      ["My friends have many problems too.", "제 친구들도 많은 고민이 있습니다."],
+      ["Some of my friends are stressed about school.", "제 친구들 중 몇몇은 학교 때문에 스트레스를 받습니다."],
+      ["One of my friends has problems with her family.", "제 친구 중 한 명은 가족 문제가 있습니다."],
+      ["Another friend feels lonely sometimes.", "다른 친구는 가끔 외로움을 느낍니다."],
+      ["I always listen to their problems carefully.", "저는 항상 그들의 고민을 주의 깊게 듣습니다."],
+      ["I say, \"Don't worry, everything will be okay.\"", "저는 \"걱정하지 마, 다 괜찮을 거야\"라고 말합니다."],
+      ["I tell them, \"I am always here for you.\"", "저는 그들에게 \"나는 항상 네 곁에 있어\"라고 말합니다."],
+      ["Good friends help each other.", "좋은 친구는 서로를 돕습니다."]
+    ]
+  },
+  {
+    q: "5. What kinds of activities do you like to do and why? (좋아하는 활동)",
+    sentences: [
+      ["I like to do many kinds of activities.", "저는 다양한 활동을 하는 것을 좋아합니다."],
+      ["I love reading books because they are interesting.", "저는 책 읽기를 좋아하는데, 재미있기 때문입니다."],
+      ["I enjoy playing the piano in my free time.", "저는 여가 시간에 피아노 치는 것을 즐깁니다."],
+      ["I like watching movies with my friends.", "저는 친구들과 영화 보는 것을 좋아합니다."],
+      ["I also like riding my bike on weekends.", "저는 주말에 자전거 타는 것도 좋아합니다."],
+      ["These activities make me feel happy.", "이러한 활동들은 저를 행복하게 만듭니다."],
+      ["They help me forget about stress.", "그것들은 제가 스트레스를 잊는 데 도움이 됩니다."],
+      ["I want to try new activities too.", "저는 새로운 활동들도 시도해 보고 싶습니다."]
+    ]
+  },
+  {
+    q: "6. Tell me about a time you felt nervous / excited. (긴장했던 / 신났던 경험)",
+    sentences: [
+      ["I felt very nervous before my English test.", "저는 영어 시험 전에 매우 긴장했습니다."],
+      ["My heart was beating so fast.", "제 심장이 매우 빠르게 뛰었습니다."],
+      ["I could not sleep well the night before.", "저는 그 전날 밤에 잘 자지 못했습니다."],
+      ["But I did my best and passed the test.", "하지만 저는 최선을 다했고 시험을 통과했습니다."],
+      ["I felt really excited on my birthday last year.", "저는 작년 제 생일에 정말 신났습니다."],
+      ["My family had a big party for me.", "제 가족은 저를 위해 큰 파티를 열어 주었습니다."],
+      ["I got a new smartphone as a gift.", "저는 선물로 새 스마트폰을 받았습니다."],
+      ["It was one of the best days of my life.", "그날은 제 인생 최고의 날 중 하나였습니다."]
+    ]
+  },
+  {
+    q: "7. Tell me about a time you didn't understand something. How did you ask for help? (이해 못 했던 경험과 도움 요청)",
+    sentences: [
+      ["Last week, I had a hard math problem.", "지난주, 저는 어려운 수학 문제가 있었습니다."],
+      ["I did not understand it at all.", "저는 그것을 전혀 이해하지 못했습니다."],
+      ["First, I tried to solve it by myself.", "먼저, 저는 혼자 그것을 풀어 보려고 했습니다."],
+      ["But it was too difficult for me.", "하지만 그것은 저에게 너무 어려웠습니다."],
+      ["So I asked my teacher for help.", "그래서 저는 선생님께 도움을 요청했습니다."],
+      ["I said, \"Could you help me with this problem?\"", "저는 \"이 문제 좀 도와주시겠어요?\"라고 말했습니다."],
+      ["My teacher explained it very kindly.", "선생님은 매우 친절하게 설명해 주셨습니다."],
+      ["Now I can solve similar problems.", "이제 저는 비슷한 문제들을 풀 수 있습니다."]
+    ]
+  },
+  {
+    q: "8. Have you ever taken part in a volunteer activity? (봉사활동 경험)",
+    sentences: [
+      ["Yes, I have joined a volunteer activity before.", "네, 저는 전에 봉사 활동에 참여한 적이 있습니다."],
+      ["Last summer, I cleaned a park with my classmates.", "지난여름, 저는 반 친구들과 공원을 청소했습니다."],
+      ["We picked up trash for two hours.", "우리는 두 시간 동안 쓰레기를 주웠습니다."],
+      ["The park became very clean.", "공원이 매우 깨끗해졌습니다."],
+      ["I also helped old people at a senior center.", "저는 또한 경로당에서 어르신들을 도왔습니다."],
+      ["I felt proud after the activity.", "저는 활동 후에 자랑스러움을 느꼈습니다."],
+      ["Volunteer work is very meaningful.", "봉사 활동은 매우 의미 있습니다."],
+      ["I want to do more volunteer work in the future.", "저는 앞으로 더 많은 봉사 활동을 하고 싶습니다."]
+    ]
+  },
+  {
+    q: "9. Do you often text? Why or why not? (문자 사용 여부와 이유)",
+    sentences: [
+      ["Yes, I text my friends every day.", "네, 저는 매일 친구들에게 문자를 보냅니다."],
+      ["Texting is fast and easy.", "문자를 보내는 것은 빠르고 쉽습니다."],
+      ["I can talk to my friends anytime.", "저는 언제든지 친구들과 이야기할 수 있습니다."],
+      ["We share funny pictures and videos.", "우리는 재미있는 사진과 영상을 공유합니다."],
+      ["But sometimes texting can be a problem.", "하지만 가끔 문자 보내기는 문제가 될 수 있습니다."],
+      ["I spend too much time on my phone.", "저는 휴대폰에 너무 많은 시간을 씁니다."],
+      ["It is hard to focus on my homework.", "숙제에 집중하기 어렵습니다."],
+      ["I try to text less when I study.", "저는 공부할 때 문자를 덜 보내려고 노력합니다."]
+    ]
+  },
+  {
+    q: "10. How many hours a day do you use your smartphone? What do you usually do with it? (스마트폰 사용 시간과 용도)",
+    sentences: [
+      ["I use my smartphone about three hours a day.", "저는 하루에 약 세 시간 정도 스마트폰을 사용합니다."],
+      ["I use it most of the time after school.", "저는 주로 방과 후에 그것을 사용합니다."],
+      ["I often watch videos on YouTube.", "저는 자주 유튜브에서 영상을 봅니다."],
+      ["I also play games with my friends.", "저는 또한 친구들과 게임을 합니다."],
+      ["Sometimes I listen to music on my phone.", "가끔 저는 휴대폰으로 음악을 듣습니다."],
+      ["I use my phone to chat with my friends.", "저는 친구들과 채팅하는 데 휴대폰을 사용합니다."],
+      ["I also study English with apps.", "저는 또한 앱으로 영어를 공부합니다."],
+      ["But I try not to use it too much.", "하지만 저는 휴대폰을 너무 많이 쓰지 않으려고 노력합니다."]
+    ]
+  }
+];
+
+const totalSentences = data.reduce((sum, q) => sum + q.sentences.length, 0);
+let revealed = new Set();
+
+function render() {
+  const container = document.getElementById('quizContent');
+  container.innerHTML = data.map((q, qi) => `
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-number">${qi+1}</div>
+        <div class="q-text">${q.q}</div>
+      </div>
+      <ul class="sentence-list">
+        ${q.sentences.map((s, si) => `
+          <li class="sentence-item" data-id="${qi}-${si}" onclick="toggleReveal(this)">
+            <div class="eng">${s[0]}</div>
+            <div class="kor">${s[1]}</div>
+          </li>
+        `).join('')}
+      </ul>
+      <div class="hint">👆 문장을 클릭하면 가려진 답이 보입니다</div>
+    </div>
+  `).join('');
+}
+
+function toggleReveal(el) {
+  el.classList.toggle('revealed');
+  const id = el.dataset.id;
+  if (el.classList.contains('revealed')) revealed.add(id);
+  else revealed.delete(id);
+  updateProgress();
+}
+
+function setMode(mode, btn) {
+  document.body.className = 'mode-' + mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // 모드 변경 시 revealed 초기화
+  document.querySelectorAll('.sentence-item').forEach(el => el.classList.remove('revealed'));
+  revealed.clear();
+  updateProgress();
+}
+
+function resetProgress() {
+  document.querySelectorAll('.sentence-item').forEach(el => el.classList.remove('revealed'));
+  revealed.clear();
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = (revealed.size / totalSentences) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent =
+    `학습 진행: ${revealed.size} / ${totalSentences} 문장 (${Math.round(pct)}%)`;
+}
+
+render();
+</script>
+</body>
+</html>
